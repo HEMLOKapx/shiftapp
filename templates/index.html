@@ -5,31 +5,46 @@
     <title>シフト管理</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- ✅ Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css
 </head>
 
 <body class="bg-light">
 
 <div class="container py-4">
 
-    <h1 class="text-center mb-4">📅 シフト管理（講師 × 生徒）</h1>
+    <h1 class="text-center mb-4">📅 シフト管理</h1>
 
-    <!-- 入力 -->
-    <div class="card p-3 mb-4 shadow-sm">
+    <!-- ✅ 講師入力 -->
+    <div class="card p-3 mb-3 shadow-sm">
+        <h5>講師登録</h5>
         <form method="POST">
+            <input type="hidden" name="type" value="teacher">
+
             <input name="teacher" class="form-control mb-2" placeholder="講師名" required>
-            <input name="student" class="form-control mb-2" placeholder="生徒名" required>
             <input type="date" name="date" class="form-control mb-2" required>
 
-            <button type="submit" class="btn btn-primary w-100">追加</button>
+            <button class="btn btn-primary w-100">講師追加</button>
         </form>
     </div>
 
-    <!-- 表 -->
-    <div class="card p-3 shadow-sm">
-        <table class="table table-bordered text-center align-middle">
+    <!-- ✅ 生徒入力 -->
+    <div class="card p-3 mb-4 shadow-sm">
+        <h5>生徒登録</h5>
+        <form method="POST">
+            <input type="hidden" name="type" value="student">
 
+            <input name="teacher" class="form-control mb-2" placeholder="担当講師名" required>
+            <input name="student" class="form-control mb-2" placeholder="生徒名" required>
+            <input type="date" name="date" class="form-control mb-2" required>
+
+            <button class="btn btn-success w-100">生徒追加</button>
+        </form>
+    </div>
+
+    <!-- ✅ 表（そのまま使える） -->
+    <div class="card p-3 shadow-sm">
+        <table class="table table-bordered text-center>
             <thead class="table-primary">
                 <tr>
                     <th>講師</th>
@@ -46,36 +61,19 @@
             <tbody>
                 {% for teacher, row in table.items() %}
                 <tr>
-
-                    <td class="fw-bold text-primary">{{ teacher }}</td>
+                    <td class="fw-bold">{{ teacher }}</td>
 
                     {% for day in ["月","火","水","木","金","土","日"] %}
                     <td>
-
                         {% for s in row[day] %}
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-
-                            <span>{{ s }}</span>
-
-                            <!-- ✅ 削除 -->
-                            <form action="/delete" method="POST" style="margin:0;">
-                                <input type="hidden" name="teacher" value="{{ teacher }}">
-                                <input type="hidden" name="student" value="{{ s }}">
-                                <input type="hidden" name="date" value="{{ date_map[teacher][day] }}">
-                                
-                                <button type="submit" class="btn btn-sm btn-danger">×</button>
-                            </form>
-
-                        </div>
+                            <div>{{ s }}</div>
                         {% endfor %}
-
                     </td>
                     {% endfor %}
 
                 </tr>
                 {% endfor %}
             </tbody>
-
         </table>
     </div>
 

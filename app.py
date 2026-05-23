@@ -23,9 +23,9 @@ def index():
             if date not in data:
                 data[date] = {}
 
-            # ✅ 正しい初期化
+            # ✅ 正しい初期化（修正済）
             if teacher not in data[date]:
-                data[ = []
+                data[date][teacher] = []
 
             # ✅ 最大5人制限
             if len(data[date][teacher]) < 5:
@@ -54,7 +54,7 @@ def index():
     return render_template("index.html", table=table, date_map=date_map)
 
 
-# ✅ 削除（完全に正しい）
+# ✅ 削除（完全修正）
 @app.route("/delete", methods=["POST"])
 def delete():
     date = request.form.get("date")
@@ -63,10 +63,11 @@ def delete():
 
     if date in data and teacher in data[date]:
 
+        # ✅ 正しい削除（修正済）
         if student in data[date][teacher]:
-            data[
+            data[date][teacher].remove(student)
 
-        # 空なら削除
+        # ✅ 空なら削除
         if len(data[date][teacher]) == 0:
             del data[date][teacher]
 

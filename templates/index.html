@@ -15,7 +15,7 @@
 
     <h1 class="text-center mb-4">📅 シフト管理（講師 × 生徒）</h1>
 
-    <!-- ✅ 入力フォーム -->
+    <!-- 入力 -->
     <div class="card p-3 mb-4 shadow-sm">
         <form method="POST">
             <input name="teacher" class="form-control mb-2" placeholder="講師名" required>
@@ -26,3 +26,60 @@
         </form>
     </div>
 
+    <!-- 表 -->
+    <div class="card p-3 shadow-sm">
+        <table class="table table-bordered text-center align-middle">
+
+            <thead class="table-primary">
+                <tr>
+                    <th>講師</th>
+                    <th>月</th>
+                    <th>火</th>
+                    <th>水</th>
+                    <th>木</th>
+                    <th>金</th>
+                    <th>土</th>
+                    <th>日</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for teacher, row in table.items() %}
+                <tr>
+
+                    <td class="fw-bold text-primary">{{ teacher }}</td>
+
+                    {% for day in ["月","火","水","木","金","土","日"] %}
+                    <td>
+
+                        {% for s in row[day] %}
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+
+                            <span>{{ s }}</span>
+
+                            <!-- ✅ 削除 -->
+                            <form action="/delete" method="POST" style="margin:0;">
+                                <input type="hidden" name="teacher" value="{{ teacher }}">
+                                <input type="hidden" name="student" value="{{ s }}">
+                                <input type="hidden" name="date" value="{{ date_map[teacher][day] }}">
+                                
+                                <button type="submit" class="btn btn-sm btn-danger">×</button>
+                            </form>
+
+                        </div>
+                        {% endfor %}
+
+                    </td>
+                    {% endfor %}
+
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>

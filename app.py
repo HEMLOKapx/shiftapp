@@ -4,7 +4,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# データ構造
+# ✅ データ構造
 # { date: { teacher: [students] } }
 data = {}
 
@@ -20,11 +20,10 @@ def index():
         date = request.form.get("date")
 
         if teacher and student and date:
-
             if date not in data:
                 data[date] = {}
 
-            # ✅ 講師がまだいなければ作る
+            # ✅ 講師がいなければ初期化
             if teacher not in datadata[date][teacher] = []
 
             # ✅ 最大5人制限
@@ -53,7 +52,8 @@ def index():
 
     return render_template("index.html", table=table, date_map=date_map)
 
-# ✅ 削除処理（完全動作）
+
+# ✅ 削除処理（完全版）
 @app.route("/delete", methods=["POST"])
 def delete():
     date = request.form.get("date")
@@ -61,10 +61,9 @@ def delete():
     student = request.form.get("student")
 
     if date in data and teacher in data[date]:
-
         if student in data[date]data[date][teacher].remove(student)
 
-        # 空なら削除
+        # ✅ 空になったら削除
         if len(data[date][teacher]) == 0:
             del data[date][teacher]
 
@@ -73,5 +72,7 @@ def delete():
 
     return redirect("/")
 
+
+# ✅ Render用（必須）
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

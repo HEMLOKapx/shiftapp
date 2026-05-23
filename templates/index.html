@@ -1,82 +1,78 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>シフト管理</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+import os
+from flask import Flask, render_template, request, redirect
+from datetime import datetime
 
-<!-- ✅ Bootstrap -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+app = Flask(__name__)
 
-<body class="bg-light">
+# ✅ { date: { teacher: [students] } }
+data = {}
 
-<div class="container py-4">
+days = ["月", "火", "水", "木", "金", "土", "日"]
 
-<h1 class="text-center mb-4">📅 シフト管理（週）</h1>
+@app.route("/", methods=["GET", "POST"])
+def index():
 
-<!-- 講師登録 -->
-<div class="card p-3 mb-3">
-<form method="POST">
-<input type="hidden" name="type" value="teacher">
-<input name="teacher" class="form-control mb-2" placeholder="講師名">
-<input type="date" name="date" class="form-control mb-2">
-<button class="btn btn-primary w-100">講師登録</button>
-</form>
-</div>
+    if request.method == "POST":
+        teacher = request.form.get("teacher")
+        student = request.form.get("student")
+        date = request.form.get("date")
 
-<!-- 生徒登録 -->
-<div class="card p-3 mb-3">
-<form method="POST">
-<input type="hidden" name="type" value="student">
-<input name="student" class="form-control mb-2" placeholder="生徒名">
-<input type="date" name="date" class="form-control mb-2">
-<button class="btn btn-success w-100">生徒追加</button>
-</form>
-</div>
+        if date not in data:
+            data[date] = {}
 
-<!-- ✅ 週表 -->
-<div class="card p-3">
-<table class="table table-bordered text-center">
+        # ✅ 講師登録
+        if teacher:
+            if teacher not in data[date]:
+                data[date][teacher] = []
 
-<thead>
-<tr>
-<th>講師</th>
-<th>月</th>
-<th>火</th>
-<th>水</th>
-<th>木</th>
-<th>金</th>
-<th>土</th>
-<th>日</th>
-</tr>
-</thead>
+        # ✅ 生徒登録（最大5人）
+        if teacher and student:
+            if len(data[date][teacher]) < 5:
+                data[date][teacher].append(student)
 
-<tbody>
-{% for teacher, row in table.items() %}
-<tr>
+    # ✅ 週表作成
+    table = {}
 
-<td class="fw-bold text-primary">{{ teacher }}</td>
+    for d_str, teachers in data.items():
+        try:
+            d = datetime.strptime(d_str, "%Y-%m-%d")
+            weekday = days[d.weekday()]
+        except:
+            continue
 
-{% for day in ["月","火","水","木","金","土","日"] %}
-<td>
+        for teacher, students in teachers.items():
 
-{% for s in row[day] %}
-<div class="d-flex justify-content-between">
-<span>{{ s }}</span>
-</div>
-{% endfor %}
+            if teacher not in table:
+                table[teacher] = {day: [] for day in days}
 
-</td>
-{% endfor %}
+            # ✅ 同じ曜日でも蓄積
+            table[teacher][weekday].extend(students)
 
-</tr>
-{% endfor %}
-</tbody>
+    return render_template("index.html", table=table)
 
-</table>
-</div>
 
-</div>
-</body>
-</html>
+# ✅ 削除処理
+@app.route("/delete", methods=["POST"])
+def delete():
+    date = request.form.get("date")
+    teacher = request.form.get("teacher")
+    student = request.form.get("student")
+
+    if date in data and teacher in data[date]:
+
+        if student in data[date][teacher]:
+            data[date][teacher].remove(student)
+
+        # 空なら講師削除
+        if len(data[date][teacher]) == 0:
+            del data[date][teacher]
+
+        if len(data[date]) == 0:
+            del data[date]
+
+    return redirect("/")
+
+
+# ✅ Render対応
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

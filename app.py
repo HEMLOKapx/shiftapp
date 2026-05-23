@@ -4,17 +4,6 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# ✅ { date: { teacher: [students] } }
-data = {}
-
-days = ["月", "火", "水", "木", "金", "土", "日"]
-
-@app.route("/", methods=["GET", "POSTimport os
-from flask import Flask, render_template, request, redirect
-from datetime import datetime
-
-app = Flask(__name__)
-
 # { date: { teacher: [students] } }
 data = {}
 
@@ -35,19 +24,24 @@ def index():
         if date not in data:
             data[date] = {}
 
-        # ✅ 講師だけ登録
+        # ✅ 講師登録
         if form_type == "teacher":
             if teacher and teacher not in data[date]:
                 data[date][teacher] = []
 
-        # ✅ 生徒だけ追加
+        # ✅ 生徒登録（講師指定なし🔥）
         elif form_type == "student":
-            # 🔥 ここ重要：既存講師に追加
-            if teacher in data[date]:
-                if student and len(data[date][teacher]) < 5:
-                    data[date][teacher].append(student)
+            if student and len(data[date]) > 0:
 
-    # ✅ 週表
+                # ✅ その日の最初の講師を取得
+                teacher_list = list(data[date].keys())
+                target_teacher = teacher_list[0]
+
+                # ✅ 最大5人制限
+                if len(data[date][target_teacher]) < 5:
+                    data[date][target_teacher].append(student)
+
+    # ✅ 週表作成
     table = {}
 
     for d_str, teachers in data.items():

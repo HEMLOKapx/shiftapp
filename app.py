@@ -4,60 +4,67 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# データ保存（簡易）
+# ✅ データ構造
+# { date: { teacher: [students] } }
 data = {}
 
-# 曜日リスト
 days = ["月", "火", "水", "木", "金", "土", "日"]
 
-# ✅ メインページ（追加＋表示）
 @app.route("/", methods=["GET", "POST"])
 def index():
 
-    # ✅ 追加処理
     if request.method == "POST":
-        name = request.form.get("name")
+        teacher = request.form.get("teacher")
+        student = request.form.get("student")
         date = request.form.get("date")
 
-        if name and date:
+        if teacher and student and date:
             if date not in data:
-                data[date] = []
-            data[date].append(name)
+                data[date] = {}
 
-    # ✅ 週表示テーブル作成
+            if teacher not in datadata[date][teacher] = []
+
+            # ✅ 最大5人制限
+            if len(data[date][teacher]) < 5:
+                data[date][teacher].append(student)
+
+    # ✅ 表作成
     table = {}
 
-    for date, names in data.items():
+    for date, teachers in data.items():
         try:
             d = datetime.strptime(date, "%Y-%m-%d")
-            weekday = days[d.weekday()]  # 曜日に変換
+            weekday = days[d.weekday()]
         except:
             continue
 
-        for n in names:
-            if n not in table:
-                table[n] = {day: "" for day in days}
+        for teacher, students in teachers.items():
+            if teacher not in table:
+                table[teacher] = {
+                    "students": {day: [] for day in days}
+                }
 
-            table[n][weekday] = "○"
+            table[teacher]["students"][weekday] = students
 
     return render_template("index.html", table=table)
 
-# ✅ 削除処理
+# ✅ 削除
 @app.route("/delete", methods=["POST"])
 def delete():
     date = request.form.get("date")
-    name = request.form.get("name")
+    teacher = request.form.get("teacher")
+    student = request.form.get("student")
 
-    if date in data:
-        if name in data[date]:
-            data[date].remove(name)
+    if date in data and teacher in data[date]:
+        if student in data[date]data[date][teacher].remove(student)
 
-        # 空なら日付ごと削除
+        if len(data[date][teacher]) == 0:
+            del data[date][teacher]
+
         if len(data[date]) == 0:
             del data[date]
 
     return redirect("/")
 
-# ✅ Render対応（必須）
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

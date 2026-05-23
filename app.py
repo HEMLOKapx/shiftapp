@@ -4,6 +4,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+# データ構造
 # { date: { teacher: [students] } }
 data = {}
 
@@ -12,23 +13,29 @@ days = ["月", "火", "水", "木", "金", "土", "日"]
 @app.route("/", methods=["GET", "POST"])
 def index():
 
-    # ✅ 追加
+    # ✅ フォーム処理（講師 or 生徒）
     if request.method == "POST":
+        form_type = request.form.get("type")
         teacher = request.form.get("teacher")
         student = request.form.get("student")
         date = request.form.get("date")
 
-        if teacher and student and date:
+        if date not in data:
+            data[date] = {}
 
-            if date not in data:
-                data[date] = {}
-
-            if teacher not in data[date]:
+        # ✅ 講師登録
+        if form_type == "teacher":
+            if teacher and teacher not in data[date]:
                 data[date][teacher] = []
 
-            # ✅ 最大5人
-            if len(data[date][teacher]) < 5:
-                data[date][teacher].append(student)
+        # ✅ 生徒登録
+        elif form_type == "student":
+            if teacher:
+                if teacher not in data[date]:
+                    data[date][teacher] = []
+
+                if student and len(data[date][teacher]) < 5:
+                    data[date][teacher].append(student)
 
     # ✅ 表作成
     table = {}
@@ -47,9 +54,8 @@ def index():
                 table[teacher] = {day: [] for day in days}
                 date_map[teacher] = {}
 
-            # ✅ 重要：上書きせず追加
+            # ✅ 上書きしない
             table[teacher][weekday].extend(students)
-
             date_map[teacher][weekday] = d_str
 
     return render_template("index.html", table=table, date_map=date_map)
@@ -67,6 +73,7 @@ def delete():
         if student in data[date][teacher]:
             data[date][teacher].remove(student)
 
+        # 空なら削除
         if len(data[date][teacher]) == 0:
             del data[date][teacher]
 

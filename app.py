@@ -4,7 +4,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# { date: { teacher, students } }
+# ✅ { date: { teacher: [students] } }
 data = {}
 
 days = ["月", "火", "水", "木", "金", "土", "日"]
@@ -13,44 +13,40 @@ days = ["月", "火", "水", "木", "金", "土", "日"]
 def index():
 
     if request.method == "POST":
-        form_type = request.form.get("type")
+        teacher = request.form.get("teacher")
+        student = request.form.get("student")
         date = request.form.get("date")
 
         if date not in data:
-            data[date] = {"teacher": "", "students": []}
+            data[date] = {}
 
         # ✅ 講師登録
-        if form_type == "teacher":
-            teacher = request.form.get("teacher")
-            if teacher:
-                data[date]["teacher"] = teacher
+        if teacher:
+            if teacher not in data[date]:
+                data[date][teacher] = []
 
-        # ✅ 生徒登録（修正済み）
-        elif form_type == "student":
-            student = request.form.get("student")
-            if student and len(data[date]["students"]) < 5:
-                data[date]["students"].append(student)
+        # ✅ 生徒登録
+        if teacher and student:
+            if len(data[date][teacher]) < 5:
+                data[date][teacher].append(student)
 
     # ✅ 週表作成
     table = {}
 
-    for d_str, info in data.items():
+    for d_str, teachers in data.items():
         try:
             d = datetime.strptime(d_str, "%Y-%m-%d")
             weekday = days[d.weekday()]
         except:
             continue
 
-        teacher = info["teacher"]
-        students = info["students"]
+        for teacher, students in teachers.items():
 
-        if not teacher:
-            continue
+            if teacher not in table:
+                table[teacher] = {day: [] for day in days}
 
-        if teacher not in table:
-            table[teacher] = {day: [] for day in days}
-
-        table[teacher][weekday] = students
+            # ✅ 上書きではなく追加
+            table[teacher][weekday].extend(students)
 
     return render_template("index.html", table=table)
 
@@ -59,15 +55,23 @@ def index():
 @app.route("/delete", methods=["POST"])
 def delete():
     date = request.form.get("date")
+    teacher = request.form.get("teacher")
     student = request.form.get("student")
 
-    if date in data:
-        if student in data[date]["students"]:
-            data[date]["students"].remove(student)
+    if date in data and teacher in data[date]:
+
+        if student in data[date][teacher]:
+            data[date][teacher].remove(student)
+
+        # 空なら講師削除
+        if len(data[date][teacher]) == 0:
+            del data[date][teacher]
+
+        if len(data[date]) == 0:
+            del data[date]
 
     return redirect("/")
 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
-

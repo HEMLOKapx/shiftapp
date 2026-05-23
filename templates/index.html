@@ -12,86 +12,42 @@
 
 <div class="container py-4">
 
-<h1 class="text-center mb-4">📅 シフト管理（週）</h1>
+<h1 class="text-center mb-4">📅 シフト管理（曜日ごと）</h1>
 
-<!-- ✅ 講師登録 -->
-<div class="card p-3 mb-3">
-<h5>講師登録</h5>
+<!-- ✅ 入力フォーム -->
+<div class="card p-3 mb-4">
 <form method="POST">
-<input type="hidden" name="type" value="teacher">
 
 <input name="teacher" class="form-control mb-2" placeholder="講師名" required>
+<input name="student" class="form-control mb-2" placeholder="生徒名">
 <input type="date" name="date" class="form-control mb-2" required>
 
-<button class="btn btn-primary w-100">講師追加</button>
+<button class="btn btn-primary w-100">登録</button>
+
 </form>
 </div>
 
-<!-- ✅ 生徒登録（講師入力なし🔥） -->
-<div class="card p-3 mb-4">
-<h5>生徒登録</h5>
-<form method="POST">
-<input type="hidden" name="type" value="student">
-
-<input name="student" class="form-control mb-2" placeholder="生徒名" required>
-<input type="date" name="date" class="form-control mb-2" required>
-
-<button class="btn btn-success w-100">生徒追加</button>
-</form>
-</div>
-
-<!-- ✅ 週表 -->
+<!-- ✅ 表（曜日ごと表示） -->
 <div class="card p-3">
 <table class="table table-bordered text-center align-middle">
 
 <thead>
 <tr>
-<th>講師</th>
-<th>月</th>
-<th>火</th>
-<th>水</th>
-<th>木</th>
-<th>金</th>
-<th>土</th>
-<th>日</th>
+<th style="width:120px;">曜日</th>
+<th>内容</th>
 </tr>
 </thead>
 
 <tbody>
-{% for teacher, row in table.items() %}
-<tr>
-
-<td class="fw-bold text-primary">{{ teacher }}</td>
 
 {% for day in ["月","火","水","木","金","土","日"] %}
+<tr>
+
+<td class="fw-bold text-primary">
+    {{ day }}
+</td>
+
 <td>
 
-{% for s in row[day] %}
-<div class="d-flex justify-content-between align-items-center mb-1">
 
-<span>{{ s }}</span>
-
-<form action="/delete" method="POST" style="margin:0;">
-<input type="hidden" name="teacher" value="{{ teacher }}">
-<input type="hidden" name="student" value="{{ s }}">
-<input type="hidden" name="date" value="{{ date_map[teacher][day] }}">
-<button class="btn btn-sm btn-danger">×</button>
-</form>
-
-</div>
-{% endfor %}
-
-</td>
-{% endfor %}
-
-</tr>
-{% endfor %}
-</tbody>
-
-</table>
-</div>
-
-</div>
-
-</body>
-</html>
+  

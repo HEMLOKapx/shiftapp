@@ -19,7 +19,6 @@ def index():
 
     return render_template("index.html", data=data)
 
-# ✅ 削除機能
 @app.route("/delete", methods=["POST"])
 def delete():
     date = request.form.get("date")

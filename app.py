@@ -13,6 +13,7 @@ days = ["月", "火", "水", "木", "金", "土", "日"]
 @app.route("/", methods=["GET", "POST"])
 def index():
 
+    # ✅ データ追加
     if request.method == "POST":
         teacher = request.form.get("teacher")
         student = request.form.get("student")
@@ -23,7 +24,7 @@ def index():
             if date not in data:
                 data[date] = {}
 
-            # ✅ 正しい初期化（修正済）
+            # ✅ 講師初期化
             if teacher not in data[date]:
                 data[date][teacher] = []
 
@@ -31,13 +32,13 @@ def index():
             if len(data[date][teacher]) < 5:
                 data[date][teacher].append(student)
 
-    # ✅ 表作成
+    # ✅ 表データ作成
     table = {}
     date_map = {}
 
-    for date, teachers in data.items():
+    for d_str, teachers in data.items():
         try:
-            d = datetime.strptime(date, "%Y-%m-%d")
+            d = datetime.strptime(d_str, "%Y-%m-%d")
             weekday = days[d.weekday()]
         except:
             continue
@@ -49,12 +50,12 @@ def index():
                 date_map[teacher] = {}
 
             table[teacher][weekday] = students
-            date_map[teacher][weekday] = date
+            date_map[teacher][weekday] = d_str
 
     return render_template("index.html", table=table, date_map=date_map)
 
 
-# ✅ 削除（完全修正）
+# ✅ 削除処理
 @app.route("/delete", methods=["POST"])
 def delete():
     date = request.form.get("date")
@@ -63,7 +64,6 @@ def delete():
 
     if date in data and teacher in data[date]:
 
-        # ✅ 正しい削除（修正済）
         if student in data[date][teacher]:
             data[date][teacher].remove(student)
 
@@ -77,5 +77,6 @@ def delete():
     return redirect("/")
 
 
+# ✅ Render用
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

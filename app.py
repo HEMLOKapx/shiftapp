@@ -25,7 +25,7 @@ def index():
             if teacher:
                 data[date]["teacher"] = teacher
 
-        # ✅ 生徒登録
+        # ✅ 生徒登録（修正済み）
         elif form_type == "student":
             student = request.form.get("student")
             if student and len(data[date]["students"]) < 5:
@@ -50,7 +50,6 @@ def index():
         if teacher not in table:
             table[teacher] = {day: [] for day in days}
 
-        # ✅ 表に追加
         table[teacher][weekday] = students
 
     return render_template("index.html", table=table)
@@ -71,3 +70,4 @@ def delete():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+

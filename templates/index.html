@@ -5,7 +5,7 @@
     <title>シフト管理</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- ✅ Bootstrap（ちゃんと読み込む） -->
+    <!-- ✅ Bootstrap -->
     https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css
 </head>
 
@@ -15,20 +15,18 @@
 
     <h1 class="text-center mb-4">📅 シフト管理（講師 × 生徒）</h1>
 
-    <!-- ✅ 入力フォーム -->
+    <!-- ✅ 入力 -->
     <div class="card p-3 mb-4 shadow-sm">
         <form method="POST">
             <input name="teacher" class="form-control mb-2" placeholder="講師名" required>
             <input name="student" class="form-control mb-2" placeholder="生徒名" required>
             <input type="date" name="date" class="form-control mb-2" required>
 
-            <button type="submit" class="btn btn-primary w-100">
-                追加
-            </button>
+            <button class="btn btn-primary w-100">追加</button>
         </form>
     </div>
 
-    <!-- ✅ エクセル風テーブル -->
+    <!-- ✅ テーブル -->
     <div class="card p-3 shadow-sm">
         <table class="table table-bordered text-center align-middle">
 
@@ -61,15 +59,13 @@
 
                                     <span>{{ s }}</span>
 
-                                    <!-- ✅ 削除ボタン（完全動作） -->
-                                    /delete="margin:0;">
+                                    <!-- ✅ 削除フォーム -->
+                                    /delete
                                         <input type="hidden" name="teacher" value="{{ teacher }}">
                                         <input type="hidden" name="student" value="{{ s }}">
                                         <input type="hidden" name="date" value="{{ date_map[teacher][day] }}">
                                         
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            ×
-                                        </button>
+                                        <button class="btn btn-sm btn-danger">×</button>
                                     </form>
 
                                 </div>
@@ -85,6 +81,12 @@
             </tbody>
 
         </table>
+    </div>
+
+</div>
+
+</body>
+</html>   </table>
     </div>
 
 </div>

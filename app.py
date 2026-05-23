@@ -3,15 +3,17 @@ from flask import Flask, render_template, request, redirect
 
 app = Flask(__name__)
 
+# データ（簡易）
 data = {}
 
+# ✅ 表示＋追加
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
         name = request.form.get("name")
         date = request.form.get("date")
 
-        if date and name:
+        if name and date:
             if date not in data:
                 data[date] = []
 
@@ -19,7 +21,7 @@ def index():
 
     return render_template("index.html", data=data)
 
-# ✅ 削除処理（完全修正版）
+# ✅ 削除
 @app.route("/delete", methods=["POST"])
 def delete():
     date = request.form.get("date")
@@ -29,11 +31,12 @@ def delete():
         if name in data[date]:
             data[date].remove(name)
 
-        # 空なら日付削除
+        # 空のとき削除
         if len(data[date]) == 0:
             del data[date]
 
     return redirect("/")
 
+# ✅ Render用
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

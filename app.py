@@ -4,15 +4,11 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# ✅ データ構造
-# { date: { teacher: [students] } }
 data = {}
-
 days = ["月", "火", "水", "木", "金", "土", "日"]
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-
     if request.method == "POST":
         teacher = request.form.get("teacher")
         student = request.form.get("student")
@@ -22,9 +18,9 @@ def index():
             if date not in data:
                 data[date] = {}
 
-            if teacher not in datadata[date][teacher] = []
+            if teacher not in data[date]:
+                data = []
 
-            # ✅ 最大5人制限
             if len(data[date][teacher]) < 5:
                 data[date][teacher].append(student)
 
@@ -40,15 +36,13 @@ def index():
 
         for teacher, students in teachers.items():
             if teacher not in table:
-                table[teacher] = {
-                    "students": {day: [] for day in days}
-                }
+                table[teacher] = {day: [] for day in days}
 
-            table[teacher]["students"][weekday] = students
+            table[teacher][weekday] = students
 
     return render_template("index.html", table=table)
 
-# ✅ 削除
+# ✅ 削除（完全版）
 @app.route("/delete", methods=["POST"])
 def delete():
     date = request.form.get("date")
@@ -56,7 +50,8 @@ def delete():
     student = request.form.get("student")
 
     if date in data and teacher in data[date]:
-        if student in data[date]data[date][teacher].remove(student)
+        if student in data[date][teacher]:
+            data
 
         if len(data[date][teacher]) == 0:
             del data[date][teacher]

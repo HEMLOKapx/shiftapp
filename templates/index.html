@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <title>シフト管理</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
 <body class="bg-light">
+
 <div class="container py-4">
 
-<h1 class="text-center mb-4">📅 シフト管理</h1>
+<h1 class="text-center mb-4">📅 シフト管理（週）</h1>
 
 <!-- ✅ 講師登録 -->
 <div class="card p-3 mb-3">
@@ -25,13 +27,12 @@
 </form>
 </div>
 
-<!-- ✅ 生徒登録 -->
+<!-- ✅ 生徒登録（講師入力なし🔥） -->
 <div class="card p-3 mb-4">
 <h5>生徒登録</h5>
 <form method="POST">
 <input type="hidden" name="type" value="student">
 
-<input name="teacher" class="form-control mb-2" placeholder="既存の講師名" required>
 <input name="student" class="form-control mb-2" placeholder="生徒名" required>
 <input type="date" name="date" class="form-control mb-2" required>
 
@@ -39,8 +40,10 @@
 </form>
 </div>
 
-<!-- ✅ 表 -->
-<table class="table table-bordered text-center">
+<!-- ✅ 週表 -->
+<div class="card p-3">
+<table class="table table-bordered text-center align-middle">
+
 <thead>
 <tr>
 <th>講師</th>
@@ -58,21 +61,37 @@
 {% for teacher, row in table.items() %}
 <tr>
 
-<td>{{ teacher }}</td>
+<td class="fw-bold text-primary">{{ teacher }}</td>
 
 {% for day in ["月","火","水","木","金","土","日"] %}
 <td>
+
 {% for s in row[day] %}
-<div>{{ s }}</div>
+<div class="d-flex justify-content-between align-items-center mb-1">
+
+<span>{{ s }}</span>
+
+<form action="/delete" method="POST" style="margin:0;">
+<input type="hidden" name="teacher" value="{{ teacher }}">
+<input type="hidden" name="student" value="{{ s }}">
+<input type="hidden" name="date" value="{{ date_map[teacher][day] }}">
+<button class="btn btn-sm btn-danger">×</button>
+</form>
+
+</div>
 {% endfor %}
+
 </td>
 {% endfor %}
 
 </tr>
 {% endfor %}
 </tbody>
+
 </table>
+</div>
 
 </div>
+
 </body>
 </html>

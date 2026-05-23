@@ -4,27 +4,48 @@
     <meta charset="UTF-8">
     <title>シフト管理</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
 
-<h1>シフト管理</h1>
+<body class="bg-light">
 
-<form method="POST">
-    <input name="name" placeholder="名前"><br>
-    <input name="date" placeholder="日付"><br>
-    <button type="submit">追加</button>
-</form>
+<div class="container py-4">
 
-<hr>
+    <h1 class="text-center mb-4">📅 シフト管理</h1>
 
-{% for date, names in data.items() %}
-    <h3>{{ date }}</h3>
-    <ul>
-    {% for n in names %}
-        <li>{{ n }}</li>
+    <!-- 入力フォーム -->
+    <div class="card p-3 mb-4 shadow-sm">
+        <form method="POST">
+            <div class="mb-2">
+                <input name="name" class="form-control" placeholder="名前">
+            </div>
+
+            <div class="mb-2">
+                <input name="date" class="form-control" placeholder="日付">
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                追加
+            </button>
+        </form>
+    </div>
+
+    <!-- データ表示 -->
+    {% for date, names in data.items() %}
+        <div class="card p-3 mb-3 shadow-sm">
+            <h5 class="text-primary">{{ date }}</h5>
+
+            <ul class="list-group">
+                {% for n in names %}
+                    <li class="list-group-item">{{ n }}</li>
+                {% endfor %}
+            </ul>
+        </div>
     {% endfor %}
-    </ul>
-{% endfor %}
+
+</div>
 
 </body>
 </html>

@@ -12,10 +12,14 @@ days = ["月", "火", "水", "木", "金", "土", "日"]
 @app.route("/", methods=["GET", "POST"])
 def index():
 
+    # ✅ データ追加
     if request.method == "POST":
         teacher = request.form.get("teacher")
         student = request.form.get("student")
         date = request.form.get("date")
+
+        if not date:
+            return redirect("/")
 
         if date not in data:
             data[date] = {}
@@ -25,13 +29,14 @@ def index():
             if teacher not in data[date]:
                 data[date][teacher] = []
 
-        # ✅ 生徒登録
+        # ✅ 生徒登録（最大5人）
         if teacher and student:
             if len(data[date][teacher]) < 5:
                 data[date][teacher].append(student)
 
     # ✅ 週表作成
     table = {}
+    date_map = {}
 
     for d_str, teachers in data.items():
         try:
@@ -44,11 +49,13 @@ def index():
 
             if teacher not in table:
                 table[teacher] = {day: [] for day in days}
+                date_map[teacher] = {}
 
-            # ✅ 上書きではなく追加
+            # ✅ ★重要：上書き防止
             table[teacher][weekday].extend(students)
+            date_map[teacher][weekday] = d_str
 
-    return render_template("index.html", table=table)
+    return render_template("index.html", table=table, date_map=date_map)
 
 
 # ✅ 削除
@@ -63,7 +70,7 @@ def delete():
         if student in data[date][teacher]:
             data[date][teacher].remove(student)
 
-        # 空なら講師削除
+        # ✅ 空なら削除
         if len(data[date][teacher]) == 0:
             del data[date][teacher]
 

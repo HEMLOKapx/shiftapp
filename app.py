@@ -9,11 +9,22 @@ data = {}
 
 days = ["月", "火", "水", "木", "金", "土", "日"]
 
+@app.route("/", methods=["GET", "POSTimport os
+from flask import Flask, render_template, request, redirect
+from datetime import datetime
+
+app = Flask(__name__)
+
+# { date: { teacher: [students] } }
+data = {}
+
+days = ["月", "火", "水", "木", "金", "土", "日"]
+
 @app.route("/", methods=["GET", "POST"])
 def index():
 
-    # ✅ データ追加
     if request.method == "POST":
+        form_type = request.form.get("type")
         teacher = request.form.get("teacher")
         student = request.form.get("student")
         date = request.form.get("date")
@@ -24,19 +35,20 @@ def index():
         if date not in data:
             data[date] = {}
 
-        # ✅ 講師登録
-        if teacher:
-            if teacher not in data[date]:
+        # ✅ 講師だけ登録
+        if form_type == "teacher":
+            if teacher and teacher not in data[date]:
                 data[date][teacher] = []
 
-        # ✅ 生徒登録（最大5人）
-        if teacher and student:
-            if len(data[date][teacher]) < 5:
-                data[date][teacher].append(student)
+        # ✅ 生徒だけ追加
+        elif form_type == "student":
+            # 🔥 ここ重要：既存講師に追加
+            if teacher in data[date]:
+                if student and len(data[date][teacher]) < 5:
+                    data[date][teacher].append(student)
 
-    # ✅ 週表作成
+    # ✅ 週表
     table = {}
-    date_map = {}
 
     for d_str, teachers in data.items():
         try:
@@ -49,13 +61,10 @@ def index():
 
             if teacher not in table:
                 table[teacher] = {day: [] for day in days}
-                date_map[teacher] = {}
 
-            # ✅ ★重要：上書き防止
             table[teacher][weekday].extend(students)
-            date_map[teacher][weekday] = d_str
 
-    return render_template("index.html", table=table, date_map=date_map)
+    return render_template("index.html", table=table)
 
 
 # ✅ 削除
@@ -66,16 +75,8 @@ def delete():
     student = request.form.get("student")
 
     if date in data and teacher in data[date]:
-
         if student in data[date][teacher]:
             data[date][teacher].remove(student)
-
-        # ✅ 空なら削除
-        if len(data[date][teacher]) == 0:
-            del data[date][teacher]
-
-        if len(data[date]) == 0:
-            del data[date]
 
     return redirect("/")
 

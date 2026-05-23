@@ -15,18 +15,18 @@
 
     <h1 class="text-center mb-4">📅 シフト管理（講師 × 生徒）</h1>
 
-    <!-- ✅ 入力 -->
+    <!-- 入力 -->
     <div class="card p-3 mb-4 shadow-sm">
         <form method="POST">
             <input name="teacher" class="form-control mb-2" placeholder="講師名" required>
             <input name="student" class="form-control mb-2" placeholder="生徒名" required>
             <input type="date" name="date" class="form-control mb-2" required>
 
-            <button class="btn btn-primary w-100">追加</button>
+            <button type="submit" class="btn btn-primary w-100">追加</button>
         </form>
     </div>
 
-    <!-- ✅ テーブル -->
+    <!-- 表 -->
     <div class="card p-3 shadow-sm">
         <table class="table table-bordered text-center align-middle">
 
@@ -54,22 +54,20 @@
 
                         {% if row[day] %}
                             {% for s in row[day] %}
-
                                 <div class="d-flex justify-content-between align-items-center mb-1">
 
                                     <span>{{ s }}</span>
 
-                                    <!-- ✅ 削除フォーム -->
+                                    <!-- ✅ 削除ボタン -->
                                     /delete
                                         <input type="hidden" name="teacher" value="{{ teacher }}">
                                         <input type="hidden" name="student" value="{{ s }}">
                                         <input type="hidden" name="date" value="{{ date_map[teacher][day] }}">
                                         
-                                        <button class="btn btn-sm btn-danger">×</button>
+                                        <button type="submit" class="btn btn-sm btn-danger">×</button>
                                     </form>
 
                                 </div>
-
                             {% endfor %}
                         {% endif %}
 
@@ -81,12 +79,6 @@
             </tbody>
 
         </table>
-    </div>
-
-</div>
-
-</body>
-</html>   </table>
     </div>
 
 </div>

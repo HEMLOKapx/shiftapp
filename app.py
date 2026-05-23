@@ -4,6 +4,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+# データ構造
 data = {}
 
 days = ["月", "火", "水", "木", "金", "土", "日"]
@@ -11,7 +12,6 @@ days = ["月", "火", "水", "木", "金", "土", "日"]
 @app.route("/", methods=["GET", "POST"])
 def index():
 
-    # ✅ データ追加
     if request.method == "POST":
         teacher = request.form.get("teacher")
         student = request.form.get("student")
@@ -22,14 +22,14 @@ def index():
             if date not in data:
                 data[date] = {}
 
-            # ✅ 正しい初期化
+            # ✅ 正しい書き方（ここが最重要）
             if teacher not in datadata[date][teacher] = []
 
-            # ✅ 最大5人
+            # ✅ 最大5人制限
             if len(data[date][teacher]) < 5:
                 data[date][teacher].append(student)
 
-    # ✅ 表データ
+    # ✅ 表作成
     table = {}
     date_map = {}
 
@@ -52,7 +52,7 @@ def index():
     return render_template("index.html", table=table, date_map=date_map)
 
 
-# ✅ 削除（完全動く）
+# ✅ 削除（完全正しい版）
 @app.route("/delete", methods=["POST"])
 def delete():
     date = request.form.get("date")

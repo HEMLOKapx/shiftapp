@@ -12,23 +12,25 @@
 
 <div class="container py-4">
 
-    <h1 class="text-center mb-4">📅 シフト管理（週）</h1>
+    <h1 class="text-center mb-4">📅 シフト管理（講師×生徒）</h1>
 
-    <!-- 入力フォーム -->
+    <!-- ✅ 入力 -->
     <div class="card p-3 mb-4 shadow-sm">
         <form method="POST">
-            <input name="name" class="form-control mb-2" placeholder="名前" required>
+            <input name="teacher" class="form-control mb-2" placeholder="講師名" required>
+            <input name="student" class="form-control mb-2" placeholder="生徒名" required>
             <input type="date" name="date" class="form-control mb-2" required>
-            <button type="submit" class="btn btn-primary w-100">追加</button>
+
+            <button class="btn btn-primary w-100">追加</button>
         </form>
     </div>
 
-    <!-- ✅ エクセル風テーブル -->
+    <!-- ✅ 表 -->
     <div class="card p-3 shadow-sm">
-        <table class="table table-bordered text-center align-middle">
+        <table class="table table-bordered text-center">
             <thead class="table-primary">
                 <tr>
-                    <th>名前</th>
+                    <th>講師</th>
                     <th>月</th>
                     <th>火</th>
                     <th>水</th>
@@ -40,16 +42,27 @@
             </thead>
 
             <tbody>
-                {% for name, row in table.items() %}
+                {% for teacher, row in table.items() %}
                 <tr>
-                    <td>{{ name }}</td>
-                    <td>{{ row["月"] }}</td>
-                    <td>{{ row["火"] }}</td>
-                    <td>{{ row["水"] }}</td>
-                    <td>{{ row["木"] }}</td>
-                    <td>{{ row["金"] }}</td>
-                    <td>{{ row["土"] }}</td>
-                    <td>{{ row["日"] }}</td>
+                    <td>{{ teacher }}</td>
+
+                    {% for day in ["月","火","水","木","金","土","日"] %}
+                        <td>
+                            {% for s in row["students"][day] %}
+                                <div class="d-flex justify-content-between">
+                                    <span>{{ s }}</span>
+
+                                    /delete
+                                        <input type="hidden" name="teacher" value="{{ teacher }}">
+                                        <input type="hidden" name="student" value="{{ s }}">
+                                        <input type="hidden" name="date" value="">
+                                        <button class="btn btn-sm btn-danger">×</button>
+                                    </form>
+                                </div>
+                            {% endfor %}
+                        </td>
+                    {% endfor %}
+
                 </tr>
                 {% endfor %}
             </tbody>

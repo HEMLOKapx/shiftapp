@@ -4,11 +4,16 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+# ✅ データ構造
+# { date: { teacher: [students] } }
 data = {}
+
 days = ["月", "火", "水", "木", "金", "土", "日"]
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+
+    # ✅ 追加
     if request.method == "POST":
         teacher = request.form.get("teacher")
         student = request.form.get("student")
@@ -18,14 +23,15 @@ def index():
             if date not in data:
                 data[date] = {}
 
-            if teacher not in data[date]:
-                data = []
+            if teacher not in datadata[date][teacher] = []
 
+            # ✅ 最大5人制限
             if len(data[date][teacher]) < 5:
                 data[date][teacher].append(student)
 
-    # ✅ 表作成
+    # ✅ 表データ作成
     table = {}
+    date_map = {}
 
     for date, teachers in data.items():
         try:
@@ -35,14 +41,17 @@ def index():
             continue
 
         for teacher, students in teachers.items():
+
             if teacher not in table:
                 table[teacher] = {day: [] for day in days}
+                date_map[teacher] = {}
 
             table[teacher][weekday] = students
+            date_map[teacher][weekday] = date
 
-    return render_template("index.html", table=table)
+    return render_template("index.html", table=table, date_map=date_map)
 
-# ✅ 削除（完全版）
+# ✅ 削除（完全動作版）
 @app.route("/delete", methods=["POST"])
 def delete():
     date = request.form.get("date")
@@ -50,9 +59,9 @@ def delete():
     student = request.form.get("student")
 
     if date in data and teacher in data[date]:
-        if student in data[date][teacher]:
-            data
+        if student in data[date]data[date][teacher].remove(student)
 
+        # 空なら削除
         if len(data[date][teacher]) == 0:
             del data[date][teacher]
 

@@ -4,7 +4,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# ✅ データ構造
+# データ構造
 # { date: { teacher: [students] } }
 data = {}
 
@@ -28,7 +28,7 @@ def index():
             if teacher not in data[date]:
                 data[date][teacher] = []
 
-            # ✅ 最大5人制限
+            # ✅ 最大5人制限（修正済）
             if len(data[date][teacher]) < 5:
                 data[date][teacher].append(student)
 
@@ -67,7 +67,7 @@ def delete():
         if student in data[date][teacher]:
             data[date][teacher].remove(student)
 
-        # ✅ 空なら削除
+        # 空なら削除
         if len(data[date][teacher]) == 0:
             del data[date][teacher]
 
@@ -77,6 +77,6 @@ def delete():
     return redirect("/")
 
 
-# ✅ Render用
+# ✅ Render対応
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))

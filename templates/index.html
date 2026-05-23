@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>シフト管理</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+
+<h1>シフト管理</h1>
+
+<form method="POST">
+    <input name="name" placeholder="名前"><br>
+    <input name="date" placeholder="日付"><br>
+    <button type="submit">追加</button>
+</form>
+
+<hr>
+
+{% for date, names in data.items() %}
+    <h3>{{ date }}</h3>
+    <ul>
+    {% for n in names %}
+        <li>{{ n }}</li>
+    {% endfor %}
+    </ul>
+{% endfor %}
+
+</body>
+</html>

@@ -28,8 +28,7 @@ def delete():
     name = request.form.get("name")
 
     if date in data:
-        if name in data[date]:
-            data[date].remove(name)
+        if name in datadata[date].remove(name)
 
         # 空のとき削除
         if len(data[date]) == 0:

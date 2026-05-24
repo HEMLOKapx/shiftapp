@@ -13,7 +13,7 @@
 
 <h1 class="text-center mb-4">📅 シフト管理</h1>
 
-<!-- ✅ 週切替 -->
+<!-- ✅ 週切替（正しくリンクを書く） -->
 <div class="d-flex justify-content-center gap-3 mb-3">
 
 <a href="/?week={{ offset - 1 }}" class="btn btn-outline-primary">
@@ -32,7 +32,7 @@
 <thead>
 <tr>
 
-<th style="width:120px;">講師</th>
+<th style="width:140px;">講師</th>
 
 {% for h in headers %}
 <th>{{ h }}</th>
@@ -47,13 +47,12 @@
 <tr>
 
 <td class="fw-bold text-primary">
-    {{ teacher }}
+{{ teacher }}
 </td>
 
 {% for i in range(7) %}
 <td>
 
-<!-- ✅ 生徒だけ表示（重要） -->
 {% if row[i] %}
     {% for s in row[i] %}
         <div>{{ s }}</div>

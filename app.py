@@ -9,7 +9,7 @@ DB_NAME = "shift.db"
 
 days = ["月","火","水","木","金","土","日"]
 
-# ✅ 初期化
+# ✅ DB初期化
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
@@ -32,6 +32,7 @@ init_db()
 @app.route("/", methods=["GET","POST"])
 def index():
 
+    # ✅ 登録処理
     if request.method == "POST":
         form_type = request.form.get("type")
         teacher = request.form.get("teacher")
@@ -42,16 +43,16 @@ def index():
             conn = sqlite3.connect(DB_NAME)
             cur = conn.cursor()
 
-            # ✅ 講師登録（student = NULL）
+            # ✅ 講師登録
             if form_type == "teacher":
-                cur.execute(
-                    "INSERT INTO shifts (date, teacher, student) VALUES (?, ?, NULL)",
-                    (date, teacher)
-                )
+                if teacher:
+                    cur.execute(
+                        "INSERT INTO shifts (date, teacher, student) VALUES (?, ?, NULL)",
+                        (date, teacher)
+                    )
 
-            # ✅ 生徒登録（自動割当）
+            # ✅ 生徒登録（講師指定なし）
             elif form_type == "student":
-                # その日の講師を1人取得
                 cur.execute(
                     "SELECT teacher FROM shifts WHERE date=? LIMIT 1",
                     (date,)
@@ -61,7 +62,7 @@ def index():
                 if row:
                     target_teacher = row[0]
 
-                    # ✅ 人数チェック
+                    # ✅ 最大5人制限
                     cur.execute(
                         "SELECT COUNT(*) FROM shifts WHERE date=? AND teacher=? AND student IS NOT NULL",
                         (date, target_teacher)
@@ -77,17 +78,20 @@ def index():
             conn.commit()
             conn.close()
 
-        return redirect("/")
+            return redirect("/")
 
-    # ✅ 表作成
+    # ✅ 取得
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
     cur.execute("SELECT date, teacher, student FROM shifts")
     rows = cur.fetchall()
+
     conn.close()
 
+    # ✅ 表構造
     table = {day: [] for day in days}
+    day_dates = {day: "" for day in days}
 
     temp = {}
 
@@ -95,6 +99,12 @@ def index():
 
         d = datetime.strptime(date,"%Y-%m-%d")
         weekday = days[d.weekday()]
+
+        # ✅ 曜日欄の日付
+        display_day = f"{d.month}/{d.day}"
+        if day_dates[weekday] == "":
+            day_dates[weekday] = display_day
+
         display = f"{d.month}/{d.day}（{weekday}）"
 
         key = (weekday, date, teacher)
@@ -113,10 +123,10 @@ def index():
     for (weekday, _, _), record in temp.items():
         table[weekday].append(record)
 
-    return render_template("index.html", table=table)
+    return render_template("index.html", table=table, day_dates=day_dates)
 
 
-# ✅ 削除
+# ✅ 生徒削除
 @app.route("/delete", methods=["POST"])
 def delete():
     date = request.form.get("date")
@@ -129,6 +139,26 @@ def delete():
     cur.execute(
         "DELETE FROM shifts WHERE date=? AND teacher=? AND student=?",
         (date, teacher, student)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect("/")
+
+
+# ✅ 講師削除
+@app.route("/delete_teacher", methods=["POST"])
+def delete_teacher():
+    date = request.form.get("date")
+    teacher = request.form.get("teacher")
+
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+
+    cur.execute(
+        "DELETE FROM shifts WHERE date=? AND teacher=?",
+        (date, teacher)
     )
 
     conn.commit()

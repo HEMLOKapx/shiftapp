@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>シフト管理</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
@@ -12,12 +11,10 @@
 
 <div class="container py-4">
 
-<h1 class="text-center mb-4">📅 シフト管理（曜日＋日付）</h1>
+<h1 class="text-center mb-4">📅 シフト管理（保存版）</h1>
 
-<!-- ✅ 講師登録 -->
-<div class="card p-3 mb-3">
-<h5>講師登録</h5>
-<form method="POST">
+<!-- 講師 -->
+<form method="POST" class="mb-3">
 <input type="hidden" name="type" value="teacher">
 
 <input name="teacher" class="form-control mb-2" placeholder="講師名" required>
@@ -25,13 +22,9 @@
 
 <button class="btn btn-primary w-100">講師追加</button>
 </form>
-</div>
 
-
-<!-- ✅ 生徒登録 -->
-<div class="card p-3 mb-4">
-<h5>生徒登録</h5>
-<form method="POST">
+<!-- 生徒 -->
+<form method="POST" class="mb-4">
 <input type="hidden" name="type" value="student">
 
 <input name="student" class="form-control mb-2" placeholder="生徒名" required>
@@ -39,80 +32,54 @@
 
 <button class="btn btn-success w-100">生徒追加</button>
 </form>
-</div>
 
-
-<!-- ✅ 表 -->
-<div class="card p-3">
+<!-- 表 -->
 <table class="table table-bordered">
-
 <thead>
 <tr>
-<th style="width:100px;">曜日</th>
-<th>詳細</th>
+<th>曜日</th>
+<th>内容</th>
 </tr>
 </thead>
 
 <tbody>
-
-{% for day in ["月","火","水","木","金","土","日"] %}
+{% for day, records in table.items() %}
 <tr>
 
-<td class="fw-bold text-primary">
-    {{ day }}
-</td>
+<td>{{ day }}</td>
 
 <td>
 
-{% if table[day] %}
-    {% for r in table[day] %}
+{% for r in records %}
+<div class="mb-3 border p-2">
 
-    <div class="mb-3 border p-2 rounded bg-white">
+<div class="fw-bold text-primary">{{ r.display }}</div>
+<div class="fw-bold">{{ r.teacher }}</div>
 
-        <!-- ✅ 日付 -->
-        <div class="text-primary fw-bold">
-            {{ r.date }}
-        </div>
+{% for s in r.students %}
+<div class="d-flex justify-content-between">
 
-        <!-- ✅ 講師 -->
-        <div class="fw-bold">
-            {{ r.teacher }}
-        </div>
+<span>{{ s }}</span>
 
-        <!-- ✅ 生徒 -->
-        {% for s in r.students %}
-        <div class="d-flex justify-content-between">
+<form action="/delete" method="POST">
+<input type="hidden" name="date" value="{{ r.date }}">
+<input type="hidden" name="teacher" value="{{ r.teacher }}">
+<input type="hidden" name="student" value="{{ s }}">
+<button class="btn btn-sm btn-danger">×</button>
+</form>
 
-            <span>{{ s }}</span>
-
-            <form action="/delete" method="POST">
-                <input type="hidden" name="date" value="{{ r.date }}">
-                <input type="hidden" name="teacher" value="{{ r.teacher }}">
-                <input type="hidden" name="student" value="{{ s }}">
-                <button class="btn btn-sm btn-danger">×</button>
-            </form>
-
-        </div>
-        {% endfor %}
-
-    </div>
-
-    {% endfor %}
-{% else %}
-    <span class="text-muted">なし</span>
-{% endif %}
-
-</td>
-
-</tr>
+</div>
 {% endfor %}
 
+</div>
+{% endfor %}
+
+</td>
+</tr>
+{% endfor %}
 </tbody>
-
 </table>
-</div>
 
 </div>
-
 </body>
 </html>

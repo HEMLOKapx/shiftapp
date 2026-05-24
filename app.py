@@ -18,7 +18,7 @@ def index():
     start = today - timedelta(days=today.weekday()) + timedelta(weeks=offset)
     week_dates = [start + timedelta(days=i) for i in range(7)]
 
-    # ✅ ヘッダー（列）
+    # ✅ ヘッダー（日付＋曜日）
     headers = [
         f"{d.month}/{d.day}（{days[i]}）"
         for i, d in enumerate(week_dates)
@@ -31,12 +31,14 @@ def index():
     rows = cur.fetchall()
     conn.close()
 
-    # ✅ テーブル（講師行）
+    # ✅ テーブル（講師 × 曜日）
     table = {}
 
     for date, teacher, student in rows:
+
         d = datetime.strptime(date, "%Y-%m-%d")
 
+        # ✅ 今週だけ
         if not (start <= d <= start + timedelta(days=6)):
             continue
 
@@ -45,6 +47,7 @@ def index():
         if teacher not in table:
             table[teacher] = {i: [] for i in range(7)}
 
+        # ✅ 生徒だけ追加
         if student:
             table[teacher][weekday].append(student)
 
@@ -54,3 +57,7 @@ def index():
         headers=headers,
         offset=offset
     )
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT",5000)))

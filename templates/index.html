@@ -15,25 +15,25 @@
 
 <!-- ✅ 講師登録 -->
 <form method="POST" class="mb-3">
-    <input type="hidden" name="type" value="teacher">
+<input type="hidden" name="type" value="teacher">
 
-    <input name="teacher" class="form-control mb-2" placeholder="講師名" required>
-    <input type="date" name="date" class="form-control mb-2" required>
+<input name="teacher" class="form-control mb-2" placeholder="講師名" required>
+<input type="date" name="date" class="form-control mb-2" required>
 
-    <button class="btn btn-primary w-100">講師追加</button>
+<button class="btn btn-primary w-100">講師追加</button>
 </form>
 
 <!-- ✅ 生徒登録 -->
 <form method="POST" class="mb-4">
-    <input type="hidden" name="type" value="student">
+<input type="hidden" name="type" value="student">
 
-    <input name="student" class="form-control mb-2" placeholder="生徒名" required>
-    <input type="date" name="date" class="form-control mb-2" required>
+<input name="student" class="form-control mb-2" placeholder="生徒名" required>
+<input type="date" name="date" class="form-control mb-2" required>
 
-    <button class="btn btn-success w-100">生徒追加</button>
+<button class="btn btn-success w-100">生徒追加</button>
 </form>
 
-<!-- ✅ 週切替（正しいリンク） -->
+<!-- ✅ 週切替 -->
 <div class="d-flex justify-content-center gap-3 mb-3">
 
 <a href="/?week={{ offset - 1 }}" class="btn btn-outline-primary">
@@ -67,7 +67,7 @@
 <tr>
 
 <td class="fw-bold text-primary">
-    {{ teacher }}
+{{ teacher }}
 </td>
 
 {% for i in range(7) %}

@@ -28,13 +28,14 @@ def index():
             if teacher not in data[date]:
                 data[date][teacher] = []
 
-        # ✅ 生徒登録
+        # ✅ 生徒登録（最大5人）
         if teacher and student:
             if len(data[date][teacher]) < 5:
                 data[date][teacher].append(student)
 
-    # ✅ ★ここが重要：曜日ごとにまとめる
+    # ✅ 曜日ごとにまとめる
     table = {day: {} for day in days}
+    date_map = {day: {} for day in days}
 
     for d_str, teachers in data.items():
         try:
@@ -47,13 +48,14 @@ def index():
 
             if teacher not in table[weekday]:
                 table[weekday][teacher] = []
+                date_map[weekday][teacher] = d_str
 
             table[weekday][teacher].extend(students)
 
-    return render_template("index.html", table=table)
+    return render_template("index.html", table=table, date_map=date_map)
 
 
-# ✅ 削除
+# ✅ 削除処理
 @app.route("/delete", methods=["POST"])
 def delete():
     date = request.form.get("date")
@@ -61,8 +63,16 @@ def delete():
     student = request.form.get("student")
 
     if date in data and teacher in data[date]:
+
         if student in data[date][teacher]:
             data[date][teacher].remove(student)
+
+        # 空なら削除
+        if len(data[date][teacher]) == 0:
+            del data[date][teacher]
+
+        if len(data[date]) == 0:
+            del data[date]
 
     return redirect("/")
 

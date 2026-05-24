@@ -7,9 +7,9 @@ app = Flask(__name__)
 # { date: { teacher: [students] } }
 data = {}
 
-days = ["月", "火", "水", "木", "金", "土", "日"]
+days = ["月","火","水","木","金","土","日"]
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET","POST"])
 def index():
 
     if request.method == "POST":
@@ -24,42 +24,40 @@ def index():
         if date not in data:
             data[date] = {}
 
-        # ✅ 講師登録
+        # ✅ 講師登録（完全分離）
         if form_type == "teacher":
             if teacher and teacher not in data[date]:
                 data[date][teacher] = []
 
-        # ✅ 生徒登録（講師入力不要🔥）
+        # ✅ 生徒登録（講師指定なし）
         elif form_type == "student":
             if student and len(data[date]) > 0:
 
-                # 🔥 その日の最初の講師に自動割当
-                teacher_list = list(data[date].keys())
-                target_teacher = teacher_list[0]
+                # その日の最初の講師に割り当て
+                first_teacher = list(data[date].keys())[0]
 
-                if len(data[date][target_teacher]) < 5:
-                    data[date][target_teacher].append(student)
+                if len(data[date][first_teacher]) < 5:
+                    data[date][first_teacher].append(student)
 
-    # ✅ 曜日ごとにまとめる
-    table = {day: {} for day in days}
-    date_map = {day: {} for day in days}
+    # ✅ 表作成（曜日＋日付）
+    table = {day: [] for day in days}
 
     for d_str, teachers in data.items():
         try:
-            d = datetime.strptime(d_str, "%Y-%m-%d")
+            d = datetime.strptime(d_str,"%Y-%m-%d")
             weekday = days[d.weekday()]
         except:
             continue
 
         for teacher, students in teachers.items():
 
-            if teacher not in table[weekday]:
-                table[weekday][teacher] = []
-                date_map[weekday][teacher] = d_str
+            table[weekday].append({
+                "date": d_str,
+                "teacher": teacher,
+                "students": students
+            })
 
-            table[weekday][teacher].extend(students)
-
-    return render_template("index.html", table=table, date_map=date_map)
+    return render_template("index.html", table=table)
 
 
 # ✅ 削除
@@ -70,11 +68,10 @@ def delete():
     student = request.form.get("student")
 
     if date in data and teacher in data[date]:
-
         if student in data[date][teacher]:
             data[date][teacher].remove(student)
 
-        # 空なら削除
+        # 空なら整理
         if len(data[date][teacher]) == 0:
             del data[date][teacher]
 
@@ -85,4 +82,4 @@ def delete():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT",5000)))

@@ -6,13 +6,31 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 
 DB_NAME = "shift.db"
-
 days = ["月","火","水","木","金","土","日"]
+
+# ✅ DB初期化（これ必須）
+def init_db():
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS shifts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT,
+        teacher TEXT,
+        student TEXT
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+init_db()
+
 
 @app.route("/")
 def index():
 
-    # ✅ 週切替
     offset = request.args.get("week", 0, type=int)
 
     today = datetime.today()
@@ -26,16 +44,22 @@ def index():
         for i, d in enumerate(week_dates)
     ]
 
-    # ✅ DB取得
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
+
+    # ✅ studentがNULLでもOKにする
     cur.execute("SELECT date, teacher, student FROM shifts")
     rows = cur.fetchall()
+
     conn.close()
 
     table = {}
 
     for date, teacher, student in rows:
+
+        # ❗ None対策
+        if not date or not teacher:
+            continue
 
         d = datetime.strptime(date, "%Y-%m-%d")
 
@@ -47,7 +71,7 @@ def index():
         if teacher not in table:
             table[teacher] = {i: [] for i in range(7)}
 
-        if student:  # ←重要
+        if student:
             table[teacher][weekday].append(student)
 
     return render_template(

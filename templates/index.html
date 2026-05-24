@@ -14,9 +14,9 @@
 <h1 class="text-center mb-4">📅 シフト管理</h1>
 
 <!-- ✅ 週切替 -->
-<div class="d-flex justify-content-center mb-3">
+<div class="d-flex justify-content-center gap-3 mb-3">
 
-<a href="/?week={{ offset - 1 }}" class="btn btn-outline-primary me-2">
+<a href="/?week={{ offset - 1 }}" class="btn btn-outline-primary">
 ← 前週
 </a>
 
@@ -26,12 +26,11 @@
 
 </div>
 
-<!-- ✅ 表（完成形） -->
+<!-- ✅ 表 -->
 <table class="table table-bordered text-center align-middle">
 
 <thead>
 <tr>
-
 <th>講師</th>
 
 {% for h in headers %}
@@ -53,6 +52,7 @@
 {% for i in range(7) %}
 <td>
 
+<!-- ✅ 生徒のみ表示（ここが修正） -->
 {% for s in row[i] %}
 <div>{{ s }}</div>
 {% endfor %}

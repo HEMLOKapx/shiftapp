@@ -31,7 +31,8 @@
 
 <thead>
 <tr>
-<th>講師</th>
+
+<th style="width:120px;">講師</th>
 
 {% for h in headers %}
 <th>{{ h }}</th>
@@ -52,10 +53,12 @@
 {% for i in range(7) %}
 <td>
 
-<!-- ✅ 生徒のみ表示（ここが修正） -->
-{% for s in row[i] %}
-<div>{{ s }}</div>
-{% endfor %}
+<!-- ✅ 生徒だけ表示（重要） -->
+{% if row[i] %}
+    {% for s in row[i] %}
+        <div>{{ s }}</div>
+    {% endfor %}
+{% endif %}
 
 </td>
 {% endfor %}

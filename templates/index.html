@@ -8,101 +8,73 @@
 </head>
 
 <body class="bg-light">
-
 <div class="container py-4">
 
-<h1 class="text-center mb-4">📅 シフト管理</h1>
+<h1 class="text-center mb-4">📅 シフト管理（週）</h1>
 
-<!-- 講師登録 -->
+<!-- 入力 -->
 <form method="POST" class="mb-3">
 <input type="hidden" name="type" value="teacher">
-
-<input name="teacher" class="form-control mb-2" placeholder="講師名" required>
-<input type="date" name="date" class="form-control mb-2" required>
-
-<button class="btn btn-primary w-100">講師追加</button>
+<input name="teacher" placeholder="講師名" required>
+<input type="date" name="date" required>
+<button>講師追加</button>
 </form>
 
-<!-- 生徒登録 -->
 <form method="POST" class="mb-4">
 <input type="hidden" name="type" value="student">
-
-<input name="student" class="form-control mb-2" placeholder="生徒名" required>
-<input type="date" name="date" class="form-control mb-2" required>
-
-<button class="btn btn-success w-100">生徒追加</button>
+<input name="student" placeholder="生徒名" required>
+<input type="date" name="date" required>
+<button>生徒追加</button>
 </form>
 
-<!-- 表 -->
-<table class="table table-bordered">
+<!-- ✅ 表 -->
+<table class="table table-bordered text-center">
 
 <thead>
 <tr>
-<th>曜日</th>
-<th>内容</th>
+
+{% for i in range(7) %}
+<th>
+    {% if headers[i] %}
+        {{ headers[i] }}
+    {% else %}
+        {{ ["月","火","水","木","金","土","日"][i] }}
+    {% endif %}
+</th>
+{% endfor %}
+
 </tr>
 </thead>
 
 <tbody>
-
-{% for day, records in table.items() %}
 <tr>
 
-<td class="fw-bold text-primary">
-    {{ day }}
-    {% if day_dates[day] %}
-        ({{ day_dates[day] }})
-    {% endif %}
-</td>
-
+{% for i in range(7) %}
 <td>
 
-{% for r in records %}
-<div class="mb-3 border p-2 rounded">
+{% for r in table[i] %}
 
-<div class="fw-bold text-primary">
-    {{ r.display }}
-</div>
+<div class="mb-2 border p-2">
 
-<div class="d-flex justify-content-between align-items-center">
-    <div class="fw-bold">{{ r.teacher }}</div>
-
-    <!-- 講師削除 -->
-    <form action="/delete_teacher" method="POST">
-        <input type="hidden" name="date" value="{{ r.date }}">
-        <input type="hidden" name="teacher" value="{{ r.teacher }}">
-        <button class="btn btn-sm btn-danger">削除</button>
-    </form>
-</div>
+<b>{{ r.teacher }}</b><br>
 
 {% for s in r.students %}
-<div class="d-flex justify-content-between">
-
-<span>{{ s }}</span>
-
-<form action="/delete" method="POST">
-<input type="hidden" name="date" value="{{ r.date }}">
-<input type="hidden" name="teacher" value="{{ r.teacher }}">
-<input type="hidden" name="student" value="{{ s }}">
-<button class="btn btn-sm btn-danger">×</button>
-</form>
-
-</div>
+<div>{{ s }}</div>
 {% endfor %}
 
 </div>
+
 {% endfor %}
 
 </td>
+{% endfor %}
 
 </tr>
-{% endfor %}
 
 </tbody>
 
 </table>
 
 </div>
-
 </body>
 </html>

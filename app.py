@@ -13,6 +13,7 @@ days = ["月", "火", "水", "木", "金", "土", "日"]
 def index():
 
     if request.method == "POST":
+        form_type = request.form.get("type")
         teacher = request.form.get("teacher")
         student = request.form.get("student")
         date = request.form.get("date")
@@ -24,14 +25,20 @@ def index():
             data[date] = {}
 
         # ✅ 講師登録
-        if teacher:
-            if teacher not in data[date]:
+        if form_type == "teacher":
+            if teacher and teacher not in data[date]:
                 data[date][teacher] = []
 
-        # ✅ 生徒登録（最大5人）
-        if teacher and student:
-            if len(data[date][teacher]) < 5:
-                data[date][teacher].append(student)
+        # ✅ 生徒登録（講師入力不要🔥）
+        elif form_type == "student":
+            if student and len(data[date]) > 0:
+
+                # 🔥 その日の最初の講師に自動割当
+                teacher_list = list(data[date].keys())
+                target_teacher = teacher_list[0]
+
+                if len(data[date][target_teacher]) < 5:
+                    data[date][target_teacher].append(student)
 
     # ✅ 曜日ごとにまとめる
     table = {day: {} for day in days}
@@ -55,7 +62,7 @@ def index():
     return render_template("index.html", table=table, date_map=date_map)
 
 
-# ✅ 削除処理
+# ✅ 削除
 @app.route("/delete", methods=["POST"])
 def delete():
     date = request.form.get("date")

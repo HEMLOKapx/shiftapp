@@ -8,73 +8,66 @@
 </head>
 
 <body class="bg-light">
+
 <div class="container py-4">
 
-<h1 class="text-center mb-4">📅 シフト管理（週）</h1>
+<h1 class="text-center mb-4">📅 シフト管理</h1>
 
-<!-- 入力 -->
-<form method="POST" class="mb-3">
-<input type="hidden" name="type" value="teacher">
-<input name="teacher" placeholder="講師名" required>
-<input type="date" name="date" required>
-<button>講師追加</button>
-</form>
+<!-- ✅ 週切替 -->
+<div class="d-flex justify-content-center mb-3">
 
-<form method="POST" class="mb-4">
-<input type="hidden" name="type" value="student">
-<input name="student" placeholder="生徒名" required>
-<input type="date" name="date" required>
-<button>生徒追加</button>
-</form>
+<a href="/?week={{ offset - 1 }}" class="btn btn-outline-primary me-2">
+← 前週
+</a>
 
-<!-- ✅ 表 -->
-<table class="table table-bordered text-center">
+<a href="/?week={{ offset + 1 }}" class="btn btn-outline-primary">
+次週 →
+</a>
+
+</div>
+
+<!-- ✅ 表（完成形） -->
+<table class="table table-bordered text-center align-middle">
 
 <thead>
 <tr>
 
-{% for i in range(7) %}
-<th>
-    {% if headers[i] %}
-        {{ headers[i] }}
-    {% else %}
-        {{ ["月","火","水","木","金","土","日"][i] }}
-    {% endif %}
-</th>
+<th>講師</th>
+
+{% for h in headers %}
+<th>{{ h }}</th>
 {% endfor %}
 
 </tr>
 </thead>
 
 <tbody>
+
+{% for teacher, row in table.items() %}
 <tr>
+
+<td class="fw-bold text-primary">
+    {{ teacher }}
+</td>
 
 {% for i in range(7) %}
 <td>
 
-{% for r in table[i] %}
-
-<div class="mb-2 border p-2">
-
-<b>{{ r.teacher }}</b><br>
-
-{% for s in r.students %}
+{% for s in row[i] %}
 <div>{{ s }}</div>
-{% endfor %}
-
-</div>
-
 {% endfor %}
 
 </td>
 {% endfor %}
 
 </tr>
+{% endfor %}
 
 </tbody>
 
 </table>
 
 </div>
+
 </body>
 </html>

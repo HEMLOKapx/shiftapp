@@ -6,9 +6,10 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 
 DB_NAME = "shift.db"
+
 days = ["月","火","水","木","金","土","日"]
 
-# ✅ DB初期化（これ必須）
+# ✅ DB初期化（絶対必要）
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
@@ -31,6 +32,7 @@ init_db()
 @app.route("/")
 def index():
 
+    # ✅ 週切替
     offset = request.args.get("week", 0, type=int)
 
     today = datetime.today()
@@ -46,18 +48,15 @@ def index():
 
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
-
-    # ✅ studentがNULLでもOKにする
     cur.execute("SELECT date, teacher, student FROM shifts")
     rows = cur.fetchall()
-
     conn.close()
 
     table = {}
 
     for date, teacher, student in rows:
 
-        # ❗ None対策
+        # ✅ None対策（超重要）
         if not date or not teacher:
             continue
 

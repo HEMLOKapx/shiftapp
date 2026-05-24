@@ -14,16 +14,29 @@
 
 <h1 class="text-center mb-4">📅 シフト管理（曜日ごと）</h1>
 
-<!-- ✅ 入力フォーム -->
-<div class="card p-3 mb-4">
+<!-- ✅ 講師登録 -->
+<div class="card p-3 mb-3">
+<h5>講師登録</h5>
 <form method="POST">
+<input type="hidden" name="type" value="teacher">
 
 <input name="teacher" class="form-control mb-2" placeholder="講師名" required>
-<input name="student" class="form-control mb-2" placeholder="生徒名">
 <input type="date" name="date" class="form-control mb-2" required>
 
-<button class="btn btn-primary w-100">登録</button>
+<button class="btn btn-primary w-100">講師追加</button>
+</form>
+</div>
 
+<!-- ✅ 生徒登録（講師なし🔥） -->
+<div class="card p-3 mb-4">
+<h5>生徒登録</h5>
+<form method="POST">
+<input type="hidden" name="type" value="student">
+
+<input name="student" class="form-control mb-2" placeholder="生徒名" required>
+<input type="date" name="date" class="form-control mb-2" required>
+
+<button class="btn btn-success w-100">生徒追加</button>
 </form>
 </div>
 
@@ -43,44 +56,40 @@
 {% for day in ["月","火","水","木","金","土","日"] %}
 <tr>
 
-<td class="fw-bold text-primary">
-    {{ day }}
-</td>
+<td class="fw-bold text-primary">{{ day }}</td>
 
 <td>
 
-    {% if table[day] %}
-        {% for teacher, students in table[day].items() %}
+{% if table[day] %}
+    {% for teacher, students in table[day].items() %}
 
-        <div class="mb-2 p-2 border rounded bg-white">
+    <div class="mb-2 p-2 border rounded bg-white">
 
-            <!-- ✅ 講師名 -->
-            <div class="fw-bold mb-1">{{ teacher }}</div>
+        <div class="fw-bold mb-1">{{ teacher }}</div>
 
-            <!-- ✅ 生徒 -->
-            {% for s in students %}
-            <div class="d-flex justify-content-between align-items-center mb-1">
+        {% for s in students %}
+        <div class="d-flex justify-content-between align-items-center mb-1">
 
-                <span>{{ s }}</span>
+            <span>{{ s }}</span>
 
-                <!-- ✅ 削除 -->
-                <form action="/delete" method="POST" style="margin:0;">
-                    <input type="hidden" name="teacher" value="{{ teacher }}">
-                    <input type="hidden" name="student" value="{{ s }}">
-                    <input type="hidden" name="date" value="{{ date_map[day][teacher] }}">
+            <!-- ✅ 削除 -->
+            <form action="/delete" method="POST" style="margin:0;">
+                <input type="hidden" name="teacher" value="{{ teacher }}">
+                <input type="hidden" name="student" value="{{ s }}">
+                <input type="hidden" name="date" value="{{ date_map[day][teacher] }}">
 
-                    <button class="btn btn-sm btn-danger">×</button>
-                </form>
-
-            </div>
-            {% endfor %}
+                <button class="btn btn-sm btn-danger">×</button>
+            </form>
 
         </div>
-
         {% endfor %}
-    {% else %}
-        <span class="text-muted">なし</span>
-    {% endif %}
+
+    </div>
+
+    {% endfor %}
+{% else %}
+    <span class="text-muted">なし</span>
+{% endif %}
 
 </td>
 

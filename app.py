@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 
 DB_NAME = "shift.db"
+
 days = ["月","火","水","木","金","土","日"]
 
 # ✅ DB初期化
@@ -31,7 +32,9 @@ init_db()
 @app.route("/", methods=["GET","POST"])
 def index():
 
-    # ✅ 登録処理
+    today = datetime.today()
+
+    # ✅ POST（登録処理）
     if request.method == "POST":
         form_type = request.form.get("type")
         teacher = request.form.get("teacher")
@@ -42,7 +45,7 @@ def index():
             conn = sqlite3.connect(DB_NAME)
             cur = conn.cursor()
 
-            # ✅ 講師登録
+            # 講師登録
             if form_type == "teacher":
                 if teacher:
                     cur.execute(
@@ -50,7 +53,7 @@ def index():
                         (date, teacher)
                     )
 
-            # ✅ 生徒登録（講師自動割当）
+            # 生徒登録
             elif form_type == "student":
                 cur.execute(
                     "SELECT teacher FROM shifts WHERE date=? LIMIT 1",
@@ -61,7 +64,7 @@ def index():
                 if row:
                     target_teacher = row[0]
 
-                    # ✅ 最大5人制限
+                    # 最大5人制限
                     cur.execute(
                         "SELECT COUNT(*) FROM shifts WHERE date=? AND teacher=? AND student IS NOT NULL",
                         (date, target_teacher)
@@ -77,27 +80,35 @@ def index():
             conn.commit()
             conn.close()
 
-        return redirect("/")
+            # ✅ ★ここが重要：登録した週に移動
+            d = datetime.strptime(date, "%Y-%m-%d")
+            week_offset = (d - today).days // 7
+
+            return redirect(f"/?week={week_offset}")
 
     # ✅ 週切替
     offset = request.args.get("week", 0, type=int)
 
-    today = datetime.today()
     start = today - timedelta(days=today.weekday()) + timedelta(weeks=offset)
     end = start + timedelta(days=6)
 
     week_dates = [start + timedelta(days=i) for i in range(7)]
 
-    # ✅ ヘッダー
+    # ✅ 表ヘッダー
     headers = [
         f"{d.month}/{d.day}（{days[i]}）"
         for i, d in enumerate(week_dates)
     ]
 
-    # ✅ DB取得
+    # ✅ DB取得（週だけ抽出）
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
-    cur.execute("SELECT date, teacher, student FROM shifts")
+
+    cur.execute(
+        "SELECT date, teacher, student FROM shifts WHERE date BETWEEN ? AND ?",
+        (start.strftime("%Y-%m-%d"), end.strftime("%Y-%m-%d"))
+    )
+
     rows = cur.fetchall()
     conn.close()
 
@@ -105,14 +116,10 @@ def index():
 
     for date, teacher, student in rows:
 
-        if not date or not teacher:
+        if not teacher:
             continue
 
         d = datetime.strptime(date, "%Y-%m-%d")
-
-        if not (start <= d <= end):
-            continue
-
         weekday = d.weekday()
 
         if teacher not in table:

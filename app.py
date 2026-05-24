@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 
 DB_NAME = "shift.db"
+
 days = ["月","火","水","木","金","土","日"]
 
 @app.route("/")
@@ -16,9 +17,10 @@ def index():
 
     today = datetime.today()
     start = today - timedelta(days=today.weekday()) + timedelta(weeks=offset)
+    end = start + timedelta(days=6)
+
     week_dates = [start + timedelta(days=i) for i in range(7)]
 
-    # ✅ ヘッダー（日付＋曜日）
     headers = [
         f"{d.month}/{d.day}（{days[i]}）"
         for i, d in enumerate(week_dates)
@@ -31,15 +33,13 @@ def index():
     rows = cur.fetchall()
     conn.close()
 
-    # ✅ テーブル（講師 × 曜日）
     table = {}
 
     for date, teacher, student in rows:
 
         d = datetime.strptime(date, "%Y-%m-%d")
 
-        # ✅ 今週だけ
-        if not (start <= d <= start + timedelta(days=6)):
+        if not (start <= d <= end):
             continue
 
         weekday = d.weekday()
@@ -47,8 +47,7 @@ def index():
         if teacher not in table:
             table[teacher] = {i: [] for i in range(7)}
 
-        # ✅ 生徒だけ追加
-        if student:
+        if student:  # ←重要
             table[teacher][weekday].append(student)
 
     return render_template(

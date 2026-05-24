@@ -27,13 +27,13 @@
 </form>
 </div>
 
-<!-- ✅ 表（曜日ごと表示） -->
+<!-- ✅ 表 -->
 <div class="card p-3">
 <table class="table table-bordered text-center align-middle">
 
 <thead>
 <tr>
-<th style="width:120px;">曜日</th>
+<th style="width:100px;">曜日</th>
 <th>内容</th>
 </tr>
 </thead>
@@ -49,5 +49,50 @@
 
 <td>
 
+    {% if table[day] %}
+        {% for teacher, students in table[day].items() %}
 
-  
+        <div class="mb-2 p-2 border rounded bg-white">
+
+            <!-- ✅ 講師名 -->
+            <div class="fw-bold mb-1">{{ teacher }}</div>
+
+            <!-- ✅ 生徒 -->
+            {% for s in students %}
+            <div class="d-flex justify-content-between align-items-center mb-1">
+
+                <span>{{ s }}</span>
+
+                <!-- ✅ 削除 -->
+                <form action="/delete" method="POST" style="margin:0;">
+                    <input type="hidden" name="teacher" value="{{ teacher }}">
+                    <input type="hidden" name="student" value="{{ s }}">
+                    <input type="hidden" name="date" value="{{ date_map[day][teacher] }}">
+
+                    <button class="btn btn-sm btn-danger">×</button>
+                </form>
+
+            </div>
+            {% endfor %}
+
+        </div>
+
+        {% endfor %}
+    {% else %}
+        <span class="text-muted">なし</span>
+    {% endif %}
+
+</td>
+
+</tr>
+{% endfor %}
+
+</tbody>
+
+</table>
+</div>
+
+</div>
+
+</body>
+</html>

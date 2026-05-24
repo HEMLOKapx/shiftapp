@@ -1,15 +1,14 @@
 import os
 import sqlite3
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
 DB_NAME = "shift.db"
-
 days = ["月","火","水","木","金","土","日"]
 
-# ✅ DB初期化（絶対必要）
+# ✅ DB初期化
 def init_db():
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
@@ -29,8 +28,56 @@ def init_db():
 init_db()
 
 
-@app.route("/")
+@app.route("/", methods=["GET","POST"])
 def index():
+
+    # ✅ 登録処理
+    if request.method == "POST":
+        form_type = request.form.get("type")
+        teacher = request.form.get("teacher")
+        student = request.form.get("student")
+        date = request.form.get("date")
+
+        if date:
+            conn = sqlite3.connect(DB_NAME)
+            cur = conn.cursor()
+
+            # ✅ 講師登録
+            if form_type == "teacher":
+                if teacher:
+                    cur.execute(
+                        "INSERT INTO shifts (date, teacher, student) VALUES (?, ?, NULL)",
+                        (date, teacher)
+                    )
+
+            # ✅ 生徒登録（講師自動割当）
+            elif form_type == "student":
+                cur.execute(
+                    "SELECT teacher FROM shifts WHERE date=? LIMIT 1",
+                    (date,)
+                )
+                row = cur.fetchone()
+
+                if row:
+                    target_teacher = row[0]
+
+                    # ✅ 最大5人制限
+                    cur.execute(
+                        "SELECT COUNT(*) FROM shifts WHERE date=? AND teacher=? AND student IS NOT NULL",
+                        (date, target_teacher)
+                    )
+                    count = cur.fetchone()[0]
+
+                    if count < 5:
+                        cur.execute(
+                            "INSERT INTO shifts (date, teacher, student) VALUES (?, ?, ?)",
+                            (date, target_teacher, student)
+                        )
+
+            conn.commit()
+            conn.close()
+
+        return redirect("/")
 
     # ✅ 週切替
     offset = request.args.get("week", 0, type=int)
@@ -41,11 +88,13 @@ def index():
 
     week_dates = [start + timedelta(days=i) for i in range(7)]
 
+    # ✅ ヘッダー
     headers = [
         f"{d.month}/{d.day}（{days[i]}）"
         for i, d in enumerate(week_dates)
     ]
 
+    # ✅ DB取得
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute("SELECT date, teacher, student FROM shifts")
@@ -56,7 +105,6 @@ def index():
 
     for date, teacher, student in rows:
 
-        # ✅ None対策（超重要）
         if not date or not teacher:
             continue
 

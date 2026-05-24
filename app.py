@@ -1,12 +1,11 @@
 import os
 import sqlite3
 from flask import Flask, render_template, request, redirect
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
 DB_NAME = "shift.db"
-
 days = ["月","火","水","木","金","土","日"]
 
 # ✅ DB初期化
@@ -43,26 +42,19 @@ def index():
             conn = sqlite3.connect(DB_NAME)
             cur = conn.cursor()
 
-            # ✅ 講師登録
             if form_type == "teacher":
-                if teacher:
-                    cur.execute(
-                        "INSERT INTO shifts (date, teacher, student) VALUES (?, ?, NULL)",
-                        (date, teacher)
-                    )
-
-            # ✅ 生徒登録（講師指定なし）
-            elif form_type == "student":
                 cur.execute(
-                    "SELECT teacher FROM shifts WHERE date=? LIMIT 1",
-                    (date,)
+                    "INSERT INTO shifts (date, teacher, student) VALUES (?, ?, NULL)",
+                    (date, teacher)
                 )
+
+            elif form_type == "student":
+                cur.execute("SELECT teacher FROM shifts WHERE date=? LIMIT 1",(date,))
                 row = cur.fetchone()
 
                 if row:
                     target_teacher = row[0]
 
-                    # ✅ 最大5人制限
                     cur.execute(
                         "SELECT COUNT(*) FROM shifts WHERE date=? AND teacher=? AND student IS NOT NULL",
                         (date, target_teacher)
@@ -78,9 +70,16 @@ def index():
             conn.commit()
             conn.close()
 
-            return redirect("/")
+        return redirect("/")
 
-    # ✅ 取得
+    # ✅ 週取得（今日基準）
+    today = datetime.today()
+
+    # 👉 月曜開始
+    start_of_week = today - timedelta(days=today.weekday())
+    end_of_week = start_of_week + timedelta(days=6)
+
+    # ✅ DB取得
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
 
@@ -89,30 +88,29 @@ def index():
 
     conn.close()
 
-    # ✅ 表構造
-    table = {day: [] for day in days}
-    day_dates = {day: "" for day in days}
+    # ✅ テーブル
+    table = {i: [] for i in range(7)}
+    headers = {}
 
     temp = {}
 
     for date, teacher, student in rows:
-
         d = datetime.strptime(date,"%Y-%m-%d")
-        weekday = days[d.weekday()]
 
-        # ✅ 曜日欄の日付
-        display_day = f"{d.month}/{d.day}"
-        if day_dates[weekday] == "":
-            day_dates[weekday] = display_day
+        # ✅ 今週だけ表示
+        if not (start_of_week <= d <= end_of_week):
+            continue
 
-        display = f"{d.month}/{d.day}（{weekday}）"
+        weekday_index = d.weekday()
 
-        key = (weekday, date, teacher)
+        # ✅ ヘッダー（日付＋曜日）
+        headers[weekday_index] = f"{d.month}/{d.day}（{days[weekday_index]}）"
+
+        key = (weekday_index, date, teacher)
 
         if key not in temp:
             temp[key] = {
                 "date": date,
-                "display": display,
                 "teacher": teacher,
                 "students": []
             }
@@ -120,52 +118,7 @@ def index():
         if student:
             temp[key]["students"].append(student)
 
-    for (weekday, _, _), record in temp.items():
-        table[weekday].append(record)
+    for (weekday_index, _, _), record in temp.items():
+        table[weekday_index].append(record)
 
-    return render_template("index.html", table=table, day_dates=day_dates)
-
-
-# ✅ 生徒削除
-@app.route("/delete", methods=["POST"])
-def delete():
-    date = request.form.get("date")
-    teacher = request.form.get("teacher")
-    student = request.form.get("student")
-
-    conn = sqlite3.connect(DB_NAME)
-    cur = conn.cursor()
-
-    cur.execute(
-        "DELETE FROM shifts WHERE date=? AND teacher=? AND student=?",
-        (date, teacher, student)
-    )
-
-    conn.commit()
-    conn.close()
-
-    return redirect("/")
-
-
-# ✅ 講師削除
-@app.route("/delete_teacher", methods=["POST"])
-def delete_teacher():
-    date = request.form.get("date")
-    teacher = request.form.get("teacher")
-
-    conn = sqlite3.connect(DB_NAME)
-    cur = conn.cursor()
-
-    cur.execute(
-        "DELETE FROM shifts WHERE date=? AND teacher=?",
-        (date, teacher)
-    )
-
-    conn.commit()
-    conn.close()
-
-    return redirect("/")
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT",5000)))
+    return render_template("index.html", table=table, headers=headers)

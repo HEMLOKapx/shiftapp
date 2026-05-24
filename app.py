@@ -1,13 +1,33 @@
 import os
+import sqlite3
 from flask import Flask, render_template, request, redirect
 from datetime import datetime
 
 app = Flask(__name__)
 
-# { date: { teacher: [students] } }
-data = {}
+DB_NAME = "shift.db"
 
 days = ["月","火","水","木","金","土","日"]
+
+# ✅ 初期化
+def init_db():
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS shifts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT,
+        teacher TEXT,
+        student TEXT
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+init_db()
+
 
 @app.route("/", methods=["GET","POST"])
 def index():
@@ -18,44 +38,80 @@ def index():
         student = request.form.get("student")
         date = request.form.get("date")
 
-        if not date:
-            return redirect("/")
+        if date:
+            conn = sqlite3.connect(DB_NAME)
+            cur = conn.cursor()
 
-        if date not in data:
-            data[date] = {}
+            # ✅ 講師登録（student = NULL）
+            if form_type == "teacher":
+                cur.execute(
+                    "INSERT INTO shifts (date, teacher, student) VALUES (?, ?, NULL)",
+                    (date, teacher)
+                )
 
-        # ✅ 講師登録（完全分離）
-        if form_type == "teacher":
-            if teacher and teacher not in data[date]:
-                data[date][teacher] = []
+            # ✅ 生徒登録（自動割当）
+            elif form_type == "student":
+                # その日の講師を1人取得
+                cur.execute(
+                    "SELECT teacher FROM shifts WHERE date=? LIMIT 1",
+                    (date,)
+                )
+                row = cur.fetchone()
 
-        # ✅ 生徒登録（講師指定なし）
-        elif form_type == "student":
-            if student and len(data[date]) > 0:
+                if row:
+                    target_teacher = row[0]
 
-                # その日の最初の講師に割り当て
-                first_teacher = list(data[date].keys())[0]
+                    # ✅ 人数チェック
+                    cur.execute(
+                        "SELECT COUNT(*) FROM shifts WHERE date=? AND teacher=? AND student IS NOT NULL",
+                        (date, target_teacher)
+                    )
+                    count = cur.fetchone()[0]
 
-                if len(data[date][first_teacher]) < 5:
-                    data[date][first_teacher].append(student)
+                    if count < 5:
+                        cur.execute(
+                            "INSERT INTO shifts (date, teacher, student) VALUES (?, ?, ?)",
+                            (date, target_teacher, student)
+                        )
 
-    # ✅ 表作成（曜日＋日付）
+            conn.commit()
+            conn.close()
+
+        return redirect("/")
+
+    # ✅ 表作成
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+
+    cur.execute("SELECT date, teacher, student FROM shifts")
+    rows = cur.fetchall()
+    conn.close()
+
     table = {day: [] for day in days}
 
-    for d_str, teachers in data.items():
-        try:
-            d = datetime.strptime(d_str,"%Y-%m-%d")
-            weekday = days[d.weekday()]
-        except:
-            continue
+    temp = {}
 
-        for teacher, students in teachers.items():
+    for date, teacher, student in rows:
 
-            table[weekday].append({
-                "date": d_str,
+        d = datetime.strptime(date,"%Y-%m-%d")
+        weekday = days[d.weekday()]
+        display = f"{d.month}/{d.day}（{weekday}）"
+
+        key = (weekday, date, teacher)
+
+        if key not in temp:
+            temp[key] = {
+                "date": date,
+                "display": display,
                 "teacher": teacher,
-                "students": students
-            })
+                "students": []
+            }
+
+        if student:
+            temp[key]["students"].append(student)
+
+    for (weekday, _, _), record in temp.items():
+        table[weekday].append(record)
 
     return render_template("index.html", table=table)
 
@@ -67,16 +123,16 @@ def delete():
     teacher = request.form.get("teacher")
     student = request.form.get("student")
 
-    if date in data and teacher in data[date]:
-        if student in data[date][teacher]:
-            data[date][teacher].remove(student)
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
 
-        # 空なら整理
-        if len(data[date][teacher]) == 0:
-            del data[date][teacher]
+    cur.execute(
+        "DELETE FROM shifts WHERE date=? AND teacher=? AND student=?",
+        (date, teacher, student)
+    )
 
-        if len(data[date]) == 0:
-            del data[date]
+    conn.commit()
+    conn.close()
 
     return redirect("/")
 

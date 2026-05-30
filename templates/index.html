@@ -1,95 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>シフト管理</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>かんたんシフト管理</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  /* 全体の文字サイズを高齢者向けに大きめに設定 */
+  body {
+    font-size: 1.1rem;
+  }
+  /* PC環境（画面幅992px以上）のときだけ横並びの7列にする */
+  @media (min-width: 992px) {
+    .week-container {
+      display: flex;
+      gap: 10px;
+    }
+    .day-column {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+  /* スマホ環境では縦並びのカードになる */
+  @media (max-width: 991.98px) {
+    .day-column {
+      margin-bottom: 15px;
+    }
+  }
+  /* 曜日の色分け */
+  .bg-sat { background-color: #e6f2ff !important; } /* 土曜日：薄い青 */
+  .bg-sun { background-color: #ffe6e6 !important; } /* 日曜日：薄い赤 */
+  .text-sat { color: #004085; }
+  .text-sun { color: #721c24; }
+</style>
 </head>
 
-<body class="bg-light">
+<body class="bg-light pb-5">
+<div class="container py-3">
 
-<div class="container py-4">
+  <h1 class="text-center mb-4 fw-bold text-dark" style="font-size: 2rem;">📅 かんたんシフト管理</h1>
 
-<h1 class="text-center mb-4">📅 シフト管理</h1>
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <h3 class="card-title fw-bold text-center mb-3 fs-4">✏️ 予定の登録</h3>
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary fs-5">1. お名前を入力してください</label>
+          <input name="name" class="form-control form-control-lg p-3 fs-4" placeholder="例：さとう" required>
+        </div>
+        <div class="mb-4">
+          <label class="form-label fw-bold text-secondary fs-5">2. 日付を選んでください</label>
+          <input type="date" name="date" class="form-control form-control-lg p-3 fs-4" required>
+        </div>
+        
+        <div class="row g-3">
+          <div class="col-6">
+            <button type="submit" name="type" value="teacher" class="btn btn-primary btn-lg w-100 py-3 fw-bold fs-4 shadow-sm">
+              👨‍🏫 先生として登録
+            </button>
+          </div>
+          <div class="col-6">
+            <button type="submit" name="type" value="student" class="btn btn-success btn-lg w-100 py-3 fw-bold fs-4 shadow-sm">
+              🎓 生徒として登録
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
 
-<!-- ✅ 講師登録 -->
-<form method="POST" class="mb-3">
-<input type="hidden" name="type" value="teacher">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="/?week={{ offset - 1 }}" class="btn btn-outline-dark btn-lg px-4 py-3 fw-bold shadow-sm">◀ 前の週</a>
+    <span class="fs-4 fw-bold text-dark px-3 bg-white py-2 rounded shadow-sm">今週の予定</span>
+    <a href="/?week={{ offset + 1 }}" class="btn btn-outline-dark btn-lg px-4 py-3 fw-bold shadow-sm">次の週 ▶</a>
+  </div>
 
-<input name="teacher" class="form-control mb-2" placeholder="講師名" required>
-<input type="date" name="date" class="form-control mb-2" required>
+  <div class="week-container">
+    {% for day in week_data %}
+      {% set bg_class = 'bg-sat' if day.weekday_idx == 5 else 'bg-sun' if day.weekday_idx == 6 else 'bg-white' %}
+      {% set text_class = 'text-sat' if day.weekday_idx == 5 else 'text-sun' if day.weekday_idx == 6 else 'text-dark' %}
+      
+      <div class="day-column">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-header border-0 text-center py-3 {{ bg_class }}">
+            <span class="fw-bold fs-3 {{ text_class }}">{{ day.display_date }}</span>
+            <span class="fw-bold fs-4 {{ text_class }}">（{{ day.weekday }}）</span>
+          </div>
+          
+          <div class="card-body p-3 bg-white">
+            <div class="mb-3">
+              <div class="text-primary fw-bold mb-2 border-bottom pb-1 fs-5">👨‍🏫 先生</div>
+              {% if day.teachers %}
+                <ul class="list-unstyled mb-0">
+                  {% for t in day.teachers %}
+                    <li class="fs-4 fw-bold text-dark my-1 bg-light p-2 rounded">・ {{ t }}</li>
+                  {% endfor %}
+                </ul>
+              {% else: %}
+                <span class="text-muted small fs-6">（予定なし）</span>
+              {% endif %}
+            </div>
 
-<button class="btn btn-primary w-100">講師追加</button>
-</form>
+            <div>
+              <div class="text-success fw-bold mb-2 border-bottom pb-1 fs-5">🎓 生徒</div>
+              {% if day.students %}
+                <ul class="list-unstyled mb-0">
+                  {% for s in day.students %}
+                    <li class="fs-4 fw-bold text-dark my-1 bg-light p-2 rounded">・ {{ s }}</li>
+                  {% endfor %}
+                </ul>
+              {% else: %}
+                <span class="text-muted small fs-6">（予定なし）</span>
+              {% endif %}
+            </div>
+          </div>
 
-<!-- ✅ 生徒登録 -->
-<form method="POST" class="mb-4">
-<input type="hidden" name="type" value="student">
-
-<input name="student" class="form-control mb-2" placeholder="生徒名" required>
-<input type="date" name="date" class="form-control mb-2" required>
-
-<button class="btn btn-success w-100">生徒追加</button>
-</form>
-
-<!-- ✅ 週切替 -->
-<div class="d-flex justify-content-center gap-3 mb-3">
-
-<a href="/?week={{ offset - 1 }}" class="btn btn-outline-primary">
-← 前週
-</a>
-
-<a href="/?week={{ offset + 1 }}" class="btn btn-outline-primary">
-次週 →
-</a>
-
-</div>
-
-<!-- ✅ 表 -->
-<table class="table table-bordered text-center align-middle">
-
-<thead>
-<tr>
-
-<th style="width:140px;">講師</th>
-
-{% for h in headers %}
-<th>{{ h }}</th>
-{% endfor %}
-
-</tr>
-</thead>
-
-<tbody>
-
-{% for teacher, row in table.items() %}
-<tr>
-
-<td class="fw-bold text-primary">
-{{ teacher }}
-</td>
-
-{% for i in range(7) %}
-<td>
-
-{% if row[i] %}
-    {% for s in row[i] %}
-        <div>{{ s }}</div>
+        </div>
+      </div>
     {% endfor %}
-{% endif %}
-
-</td>
-{% endfor %}
-
-</tr>
-{% endfor %}
-
-</tbody>
-
-</table>
+  </div>
 
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
